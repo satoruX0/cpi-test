@@ -23,6 +23,15 @@ pub mod program_a {
         ];
         let signers_seeds: &[&[&[u8]]] = &[&[b"pda", to_pubkey.as_ref(), &[bump]]];
         invoke_signed(instruction, &account_infos, signers_seeds)?;
+
+        let cpi_context = CpiContext::new_with_signer(
+            ctx.accounts.program_b.to_account_info(),
+            program_b::cpi::accounts::Initialize {
+                pda_account: ctx.accounts.pda_account.to_account_info(),
+            },
+            signers_seeds,
+        );
+        program_b::cpi::initialize(cpi_context);
         Ok(())
     }
 }
@@ -38,5 +47,5 @@ pub struct Initialize<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
     pub system_program: Program<'info, System>,
-    // pub program_b: Program<'info, ProgramB>,
+    pub program_b: Program<'info, ProgramB>,
 }
